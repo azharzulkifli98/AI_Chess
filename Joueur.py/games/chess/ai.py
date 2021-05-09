@@ -3,6 +3,7 @@
 from joueur.base_ai import BaseAI
 from games.chess.myboard import Board
 from games.chess.myboard import Minifish
+import time
 
 
 # <<-- Creer-Merge: imports -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
@@ -71,15 +72,18 @@ class AI(BaseAI):
         play = Minifish(p)
 
         # will implement time heuristic here
-        curtime = self.player._time_remaining
-        print(curtime)
-        usable = self.player._time_remaining / 32
+        interval = self.player._time_remaining / 40
+        starttime = time.time_ns()
+        endtime = starttime + interval
 
-        # estimate each iteration takes twice as long
-        halftime = curtime - (usable / 2)
         bestmove = ""
+        depth = 2
+        while time.time_ns() < endtime:
+            bestmove = play.pick_move(depth)
+            depth += 1
 
-        return play.pick_random_move()
+        print(self.player._time_remaining)
+        return bestmove
 
         # <<-- /Creer-Merge: makeMove -->>
 

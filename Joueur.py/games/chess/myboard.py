@@ -451,106 +451,99 @@ class Minifish:
                 score = score + pointvalue[p[0]]
 
         # also consider pieces under attack
-        for p in totalpieces:
-            if self.board.is_attacked(p[1], p[2]):
-                score = score + pointvalue[p[0]]
+        if self.board.is_attacked(self.board.wk[0], self.board.wk[1]):
+            score = score - 10
+        if self.board.is_attacked(self.board.bk[0], self.board.bk[1]):
+            score = score + 10
 
         return score
 
 
 
-    def minimax(self, chessboard, curdepth, mymove):
-        # first simulate move chosen
-        if mymove != "":
-            self.board = copy.deepcopy(chessboard)
 
+     
+ 
+
+
+
+
+    def alphabeta_minimax(self, board, depth, alpha, beta, nextmove):
+        self.board = copy.deepcopy(board)
+
+        # first do move
+        if nextmove != "":
             # forgot to check whether move was special or not
-            if len(mymove) > 4:
-                if mymove[0] == "P" or mymove[0] == "p":
+            if len(nextmove) > 4:
+                if nextmove[0] == "P" or nextmove[0] == "p":
                     # enpasse, need to remove other pawn
-                    (oldy, oldx, newy, newx) = coords_to_index(mymove[1:])
+                    (oldy, oldx, newy, newx) = coords_to_index(nextmove[1:])
                     self.board.move_piece(oldy, oldx, newy, newx)
                     self.board.move_piece(oldy, oldx, oldy, newx)
-                elif mymove[0] in "KQkq":
+                elif nextmove[0] in "KQkq":
                     # castling, move king and a rook
-                    (oldy, oldx, newy, newx) = coords_to_index(mymove[1:])
+                    (oldy, oldx, newy, newx) = coords_to_index(nextmove[1:])
                     self.board.move_piece(oldy, oldx, newy, newx)
-                    if mymove[0] == "K":
+                    if nextmove[0] == "K":
                         self.board.move_piece(7, 7, 7, 5)
-                    elif mymove[0] == "Q":
+                    elif nextmove[0] == "Q":
                         self.board.move_piece(7, 0, 7, 3)
-                    elif mymove[0] == "k":
+                    elif nextmove[0] == "k":
                         self.board.move_piece(0, 7, 0, 5)
-                    elif mymove[0] == "q":
+                    elif nextmove[0] == "q":
                         self.board.move_piece(0, 0, 0, 3)
             else:
-                (oldy, oldx, newy, newx) = coords_to_index(mymove)
+                (oldy, oldx, newy, newx) = coords_to_index(nextmove)
                 self.board.move_piece(oldy, oldx, newy, newx)
             self.board.update_pieces()
             self.change_turn()
 
-
-        # if terminal reached return given score and associated move
-        if curdepth <= 0 or self.is_in_checkmate():
+        # then decide whether to continue
+        if depth <= 0 or self.is_in_checkmate():
             score = self.get_heuristic()
-            return (mymove, score)
+            return (nextmove, score)
 
 
-        # if white/max turn then find biggest of the min
+        # if white max turn
         elif self.board.turn == "w":
             bestscore = -100
             bestmove = ""
             allmoves = self.get_all_moves()
             for piece in allmoves:
                 for move in piece:
-                    possible = self.minimax(self.board, curdepth - 1, move)
+                    possible = self.alphabeta_minimax(self.board, depth - 1, alpha, beta, move)
                     # need reset after each move
-                    self.board = copy.deepcopy(chessboard)
+                    self.board = copy.deepcopy(board)
 
                     if bestscore < possible[1]:
                         bestmove = move
                         bestscore = possible[1]
-                    #elif best[1] == possible[1] and random.getrandbits(1):
-                    #    best = (move, possible[1])
+                    alpha = max(alpha, bestscore)
+                    if beta <= alpha:
+                        break
 
-
-        # if min/black then pick min of the maxes
+        # if black min turn
         elif self.board.turn == "b":
             bestscore = 100
             bestmove = ""
             allmoves = self.get_all_moves()
             for piece in allmoves:
                 for move in piece:
-                    possible = self.minimax(self.board, curdepth - 1, move)
-                    self.board = copy.deepcopy(chessboard)
+                    possible = self.alphabeta_minimax(self.board, depth - 1, alpha, beta, move)
+                    self.board = copy.deepcopy(board)
 
                     if bestscore > possible[1]:
                         bestmove = move
                         bestscore = possible[1]
-                    #elif best[1] == possible[1] and random.getrandbits(1):
-                    #    best = (move, possible[1])
-            
+                    beta = min(beta, bestscore)
+                    if beta <= alpha:
+                        break
+
         return (bestmove, bestscore)
 
 
 
-
-    def pick_move(self, totaltime):
-        # first get total time usable
-        usable = totaltime / 32
-
-        bestmove = ""
-        curtime = usable
-        if totaltime > 300000:
-            i = 2
-        else:
-            i = 1
-
-        # then decide on depth and whether to go for a round        
-        while curtime >= usable * 0.40:
-            bestmove = self.minimax(self.board, i, "")
-            i += 1
-            curtime = update()
+    def pick_move(self, depth):
+        bestmove = self.alphabeta_minimax(self.board, depth, -1000, 1000, "")
 
         # then return best move, dont forget to strip front letters first
         bestmove = bestmove[0]

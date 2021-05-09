@@ -32,6 +32,8 @@ def opposites(p1, p2):
 This object will handle all chess mechanic functions
 """
 class Board:
+    __slots__ = 'matrix', 'turnpieces', 'enemypieces', 'turn', 'castling', 'enpasse', 'bk', 'wk'
+
     # this will create any board based on the turn player using fen string
     def __init__(self, fen):
         self.matrix = []

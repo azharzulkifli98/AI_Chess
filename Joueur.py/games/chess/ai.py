@@ -1,6 +1,9 @@
 # This is where you build your AI for the Chess game.
 
 from joueur.base_ai import BaseAI
+from games.chess.myboard import Board
+from games.chess.myboard import Minifish
+
 
 # <<-- Creer-Merge: imports -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
 # you can add additional import(s) here
@@ -61,10 +64,23 @@ class AI(BaseAI):
         Returns:
             str: A string in Universal Chess Inferface (UCI) or Standard Algebraic Notation (SAN) formatting for the move you want to make. If the move is invalid or not properly formatted you will lose the game.
         """
-        print(self.game.print())
+        self.game.print()
         # <<-- Creer-Merge: makeMove -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
-        # Put your game logic here for makeMove
-        return ""
+
+        p = Board(self.game.fen)
+        play = Minifish(p)
+
+        # will implement time heuristic here
+        curtime = self.player._time_remaining
+        print(curtime)
+        usable = self.player._time_remaining / 32
+
+        # estimate each iteration takes twice as long
+        halftime = curtime - (usable / 2)
+        bestmove = ""
+
+        return play.pick_random_move()
+
         # <<-- /Creer-Merge: makeMove -->>
 
     # <<-- Creer-Merge: functions -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.

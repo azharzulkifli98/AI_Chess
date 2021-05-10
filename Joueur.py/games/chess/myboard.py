@@ -296,6 +296,8 @@ class Board:
                         self.turnpieces.append([val, i, j])
                     elif self.turn == "w" and val.islower() or self.turn == "b" and val.isupper():
                         self.enemypieces.append([val, i, j])
+        # gives better pruning        
+        self.turnpieces = sorted(self.turnpieces, key = lambda x : abs(4 - x[1]))
 
 
     # will need for testing out moves ahead of time
@@ -469,7 +471,6 @@ class Minifish:
 
     def alphabeta_minimax(self, board, depth, alpha, beta, nextmove):
         self.board = copy.deepcopy(board)
-        original = copy.deepcopy(board)
 
         # first do move
         if nextmove != "":
@@ -497,7 +498,9 @@ class Minifish:
                 self.board.move_piece(oldy, oldx, newy, newx)
             self.board.update_pieces()
             self.change_turn()
-            original = copy.deepcopy(self.board)
+
+
+        original = copy.deepcopy(self.board)
 
         # then decide whether to continue
         if depth <= 0 or self.is_in_checkmate():
@@ -576,15 +579,16 @@ class Minifish:
 
 # include some test cases
 
-
+"""
 p = Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 #p = Board("8/pppppppp/8/8/8/8/PPPPPPPP/8 w KQkq - 0 1")
 play = Minifish(p)
-for i in range(4):
-    play.board.print_matrix()
-    best = play.pick_move(5)
+for i in range(2):
+    best = play.pick_move(4)
     print(best)
     (oldy, oldx, newy, newx) = coords_to_index(best)
     play.board.move_piece(oldy, oldx, newy, newx)
     play.change_turn()
+    play.board.print_matrix()
     play.board.update_pieces()
+"""

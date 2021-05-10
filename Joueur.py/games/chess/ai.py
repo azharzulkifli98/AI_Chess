@@ -72,12 +72,13 @@ class AI(BaseAI):
         play = Minifish(p)
 
         # will implement time heuristic here
-        interval = self.player._time_remaining / 40
+        interval = self.player._time_remaining / 64
         starttime = time.time_ns()
         endtime = starttime + interval
 
         bestmove = ""
-        depth = 1
+        bestmove = play.pick_move(depth)
+        depth = 2
         while time.time_ns() < endtime:
             bestmove = play.pick_move(depth)
             depth += 1

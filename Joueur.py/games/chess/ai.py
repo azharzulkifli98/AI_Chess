@@ -77,7 +77,7 @@ class AI(BaseAI):
         endtime = starttime + interval
 
         bestmove = ""
-        depth = 2
+        depth = 1
         while time.time_ns() < endtime:
             bestmove = play.pick_move(depth)
             depth += 1

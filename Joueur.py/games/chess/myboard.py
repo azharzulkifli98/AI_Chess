@@ -101,13 +101,13 @@ class Board:
                 moves.append(index_to_coords(y, x, y + 2*dir, x))
 
         # attack
-        if inbounds(y + dir, x + 1):
+        if inbounds(y + dir, x + 1) and self.matrix[y + dir][x + 1] != " ":
             if opposites(piece, self.matrix[y + dir][x + 1]):
                 moves.append(index_to_coords(y, x, y+dir, x+1))
             # subtract because algebra notation
             if self.enpasse == convert[x+1] + str(8 - y-dir):
                 moves.append(piece + index_to_coords(y, x, y+dir, x+1))
-        if inbounds(y + dir, x - 1):
+        if inbounds(y + dir, x - 1) and self.matrix[y + dir][x - 1] != " ":
             if opposites(piece, self.matrix[y + dir][x - 1]):
                 moves.append(index_to_coords(y, x, y+dir, x-1))
             if self.enpasse == convert[x-1] + str(8 - y-dir):
@@ -469,6 +469,7 @@ class Minifish:
 
     def alphabeta_minimax(self, board, depth, alpha, beta, nextmove):
         self.board = copy.deepcopy(board)
+        original = copy.deepcopy(board)
 
         # first do move
         if nextmove != "":
@@ -496,6 +497,7 @@ class Minifish:
                 self.board.move_piece(oldy, oldx, newy, newx)
             self.board.update_pieces()
             self.change_turn()
+            original = copy.deepcopy(self.board)
 
         # then decide whether to continue
         if depth <= 0 or self.is_in_checkmate():
@@ -512,7 +514,7 @@ class Minifish:
                 for move in piece:
                     possible = self.alphabeta_minimax(self.board, depth - 1, alpha, beta, move)
                     # need reset after each move
-                    self.board = copy.deepcopy(board)
+                    self.board = copy.deepcopy(original)
 
                     if bestscore < possible[1]:
                         bestmove = move
@@ -529,7 +531,7 @@ class Minifish:
             for piece in allmoves:
                 for move in piece:
                     possible = self.alphabeta_minimax(self.board, depth - 1, alpha, beta, move)
-                    self.board = copy.deepcopy(board)
+                    self.board = copy.deepcopy(original)
 
                     if bestscore > possible[1]:
                         bestmove = move
@@ -574,3 +576,15 @@ class Minifish:
 
 # include some test cases
 
+
+p = Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+#p = Board("8/pppppppp/8/8/8/8/PPPPPPPP/8 w KQkq - 0 1")
+play = Minifish(p)
+for i in range(4):
+    play.board.print_matrix()
+    best = play.pick_move(5)
+    print(best)
+    (oldy, oldx, newy, newx) = coords_to_index(best)
+    play.board.move_piece(oldy, oldx, newy, newx)
+    play.change_turn()
+    play.board.update_pieces()
